@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lhl.myBatis.mapper.AuthorMapper">
+    <!--事务提交-->
+    <insert id="insertAuthor" parameterType="Author">
+        insert into Author(realname,userid,idcard) values(#{realname},#{user.id},#{idcard})
+    </insert>
+
+    <resultMap id="authorMap" type="Author">
+        <id property="id" column="author.id"/>
+        <result property="idcard" column="idcard"/>
+        <result property="realname" column="realname"/>
+        <association property="user" column="userid" javaType="User">
+            <id property="id" column="user.id"/>
+            <result property="username" column="username"/>
+            <result property="password" column="password"/>
+            <result property="phone" column="phone"/>
+        </association>
+    </resultMap>
+    <!--内联查询-->
+    <select id="selectAuthorJoin" resultMap="authorMap">
+        select * from author inner join user on user.id=author.userid
+    </select>
+
+    <resultMap id="authorMapConst" type="Author">
+        <id property="id" column="author.id"/>
+        <result property="idcard" column="idcard"/>
+        <result property="realname" column="realname"/>
+        <association property="user" column="userid" javaType="User">
+            <constructor>
+                <arg column="username" javaType="String"/>
+                <arg column="password" javaType="String"/>
+            </constructor>
+        </association>
+    </resultMap>
+    <!--构造函数内联查询-->
+    <select id="selectAuthorJoinConst" resultMap="authorMapConst">
+        select * from author inner join user on user.id=author.userid
+    </select>
+    <resultMap id="authorMapSub" type="Author">
+        <id property="id" column="author.id"/>
+        <result property="idcard" column="idcard"/>
+        <result property="realname" column="realname"/>
+        <association property="user" column="userid" javaType="User"
+                     select="com.lhl.myBatis.mapper.UserMapper.findById"/>
+    </resultMap>
+    <!--子查询-->
+    <select id="selectAuthorMapSub" resultMap="authorMapSub">
+        select * from author
+    </select>
+</mapper>

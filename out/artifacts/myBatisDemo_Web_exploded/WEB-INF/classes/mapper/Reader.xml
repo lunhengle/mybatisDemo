@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lhl.myBatis.mapper.AuthorMapper">
+    <insert id="insertReader" parameterType="Reader">
+        insert into Reader(userid,money) values(#{user.id},#{money})
+    </insert>
+    <!--集合查询-->
+    <resultMap id="readerMap" type="Reader">
+        <id property="id" column="id"/>
+        <result property="money" column="money"/>
+        <collection property="userList" javaType="ArrayList" column="userid" ofType="user">
+            <result property="username" column="username"/>
+            <result property="password" column="password"/>
+            <result property="phone" column="phone"/>
+        </collection>
+    </resultMap>
+    <select id="selectReader" resultMap="readerMap">
+        select * from reader inner join user on reader.userid=user.id
+    </select>
+    <!--if查询条件-->
+    <select id="selectReaderIf" parameterType="Reader" resultType="Reader">
+        select * from reader where 1=1
+        <if test="money!=null">and money >#{money}</if>
+    </select>
+    <!--choose 查询条件-->
+    <select id="selectReaderChoose" parameterType="Reader" resultType="Reader">
+        select * from reader where 1=1
+        <choose>
+            <when test="null!=id">
+                and id=#{id}
+            </when>
+            <when test="null!=money">
+                and money=#{money}
+            </when>
+            <otherwise>
+                and 2=2
+            </otherwise>
+        </choose>
+    </select>
+    <!--where条件 相比于其他的判断会自动去掉and-->
+    <select id="selectReaderWhere" parameterType="Reader" resultType="Reader">
+        select * from reader
+        <where>
+            <if test="null!=id">
+                and id=#{id}
+            </if>
+            <if test="null!=money">
+                and money=#{money}
+            </if>
+        </where>
+    </select>
+    <!--set条件-->
+    <update id="updateReaderSet" parameterType="Reader">
+        update reader
+        <set>
+            <if test="null!=money">
+                money=#{money},
+            </if>
+            <if test="null!=user.id">
+                userid=#{user.id},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <!--trim条件-->
+    <update id="updateReaderTrim" parameterType="Reader">
+        update reader
+        <trim prefix="set" suffix="where id=#{id}" suffixOverrides=",">
+            <if test="null!=money">money=#{money},</if>
+            <if test="null!=user.id">userid=#{user.id},</if>
+        </trim>
+    </update>
+    <!--trim 查询-->
+    <select id="selectReaderTrim" parameterType="Reader" resultType="Reader">
+        select * from reader
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="null!=money">
+                and money=#{money}
+            </if>
+            <if test="null!=id">
+                and id=#{id}
+            </if>
+        </trim>
+    </select>
+    <!--foreach 查询-->
+    <select id="selectReaderForeach" parameterType="list" resultType="Reader">
+        select * from reader
+        <where>
+            id in
+            <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+    <!--foreach 赋值-->
+    <insert id="insertReaderForeach" parameterType="java.util.List">
+        insert into reader(userid,money) values
+        <foreach collection="list" item="item"  index="index" open="" separator="," close="">
+            (#{item.user.id},#{item.money})
+        </foreach>
+    </insert>
+</mapper>
